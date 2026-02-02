@@ -1,0 +1,26 @@
+{
+  "name": "adelante",
+  "version": "1.0.0",
+  "description": "Invoice Factoring Marketplace on NEAR Protocol",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=frontend",
+    "build": "npm run build --workspace=frontend",
+    "build:contracts": "./scripts/build-contracts.sh",
+    "deploy": "./scripts/deploy.sh",
+    "seed": "./scripts/seed-data.sh",
+    "demo": "./scripts/demo.sh"
+  },
+  "keywords": [
+    "near",
+    "blockchain",
+    "invoice",
+    "factoring",
+    "defi"
+  ],
+  "author": "",
+  "license": "MIT"
+}
