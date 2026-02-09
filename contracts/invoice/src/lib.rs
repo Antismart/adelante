@@ -38,6 +38,18 @@ pub struct Invoice {
     pub risk_score: u8,
 }
 
+/// Old contract state (for migration from pre-admin version)
+#[derive(BorshDeserialize)]
+#[borsh(crate = "near_sdk::borsh")]
+pub struct OldInvoiceContract {
+    invoices: IterableMap<String, Invoice>,
+    invoices_by_creator: LookupMap<AccountId, Vec<String>>,
+    invoices_by_owner: LookupMap<AccountId, Vec<String>>,
+    invoice_count: u64,
+    marketplace_contract: AccountId,
+    escrow_contract: AccountId,
+}
+
 /// Invoice NFT Contract
 #[near(contract_state)]
 #[derive(PanicOnDefault)]
@@ -48,13 +60,14 @@ pub struct InvoiceContract {
     invoice_count: u64,
     marketplace_contract: AccountId,
     escrow_contract: AccountId,
+    admin: AccountId,
 }
 
 #[near]
 impl InvoiceContract {
     /// Initialize the contract
     #[init]
-    pub fn new(marketplace_contract: AccountId, escrow_contract: AccountId) -> Self {
+    pub fn new(marketplace_contract: AccountId, escrow_contract: AccountId, admin: AccountId) -> Self {
         Self {
             invoices: IterableMap::new(b"i"),
             invoices_by_creator: LookupMap::new(b"c"),
@@ -62,6 +75,23 @@ impl InvoiceContract {
             invoice_count: 0,
             marketplace_contract,
             escrow_contract,
+            admin,
+        }
+    }
+
+    /// Migrate from old state to new state (adds admin field)
+    #[private]
+    #[init(ignore_state)]
+    pub fn migrate(admin: AccountId) -> Self {
+        let old: OldInvoiceContract = env::state_read().expect("Failed to read old state");
+        Self {
+            invoices: old.invoices,
+            invoices_by_creator: old.invoices_by_creator,
+            invoices_by_owner: old.invoices_by_owner,
+            invoice_count: old.invoice_count,
+            marketplace_contract: old.marketplace_contract,
+            escrow_contract: old.escrow_contract,
+            admin,
         }
     }
 
@@ -296,16 +326,30 @@ impl InvoiceContract {
         env::log_str(&format!("Invoice {} unlisted", invoice_id));
     }
 
-    /// Update marketplace contract (admin only - for setup)
+    /// Update marketplace contract (admin only)
     pub fn set_marketplace_contract(&mut self, marketplace_contract: AccountId) {
-        // In production, add proper admin check
+        let caller = env::predecessor_account_id();
+        assert!(caller == self.admin, "Only admin can update marketplace contract");
         self.marketplace_contract = marketplace_contract;
     }
 
-    /// Update escrow contract (admin only - for setup)
+    /// Update escrow contract (admin only)
     pub fn set_escrow_contract(&mut self, escrow_contract: AccountId) {
-        // In production, add proper admin check
+        let caller = env::predecessor_account_id();
+        assert!(caller == self.admin, "Only admin can update escrow contract");
         self.escrow_contract = escrow_contract;
+    }
+
+    /// Update admin (current admin only)
+    pub fn set_admin(&mut self, new_admin: AccountId) {
+        let caller = env::predecessor_account_id();
+        assert!(caller == self.admin, "Only admin can change admin");
+        self.admin = new_admin;
+    }
+
+    /// Get admin address
+    pub fn get_admin(&self) -> AccountId {
+        self.admin.clone()
     }
 
     // ============ VIEW METHODS ============
@@ -395,7 +439,7 @@ mod tests {
         let context = get_context(alice.clone());
         testing_env!(context.build());
 
-        let mut contract = InvoiceContract::new(marketplace, escrow);
+        let mut contract = InvoiceContract::new(marketplace, escrow, alice.clone());
 
         let invoice_id = contract.create_invoice(
             U128(2_000_000_000), // $2000 USDC
@@ -424,7 +468,7 @@ mod tests {
         let context = get_context(alice.clone());
         testing_env!(context.build());
 
-        let mut contract = InvoiceContract::new(marketplace, escrow);
+        let mut contract = InvoiceContract::new(marketplace, escrow, alice.clone());
 
         let invoice_id = contract.create_invoice(
             U128(1_000_000_000),

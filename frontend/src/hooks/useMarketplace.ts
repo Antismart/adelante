@@ -264,53 +264,6 @@ export function useMarketplace() {
     [selector, accountId, removeListing]
   );
 
-  const placeBid = useCallback(
-    async (listingId: string, amount: string): Promise<string | null> => {
-      if (!selector || !accountId) {
-        setError("Wallet not connected");
-        return null;
-      }
-
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const wallet = await selector.wallet();
-
-        // Use ft_transfer_call to send USDC bid to marketplace
-        const result = await wallet.signAndSendTransaction({
-          receiverId: CONTRACT_IDS.usdc,
-          actions: [
-            {
-              type: "FunctionCall",
-              params: {
-                methodName: "ft_transfer_call",
-                args: {
-                  receiver_id: CONTRACT_IDS.marketplace,
-                  amount: amount,
-                  memo: null,
-                  msg: `place_bid:${listingId}`,
-                },
-                gas: ONE_HUNDRED_TGAS,
-                deposit: ONE_YOCTO,
-              },
-            },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ] as any,
-        });
-
-        return result?.transaction?.hash || null;
-      } catch (err) {
-        console.error("Failed to place bid:", err);
-        setError("Failed to place bid");
-        return null;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [selector, accountId]
-  );
-
   return {
     listings,
     isLoading,
@@ -319,6 +272,5 @@ export function useMarketplace() {
     listInvoice,
     buyInvoice,
     cancelListing,
-    placeBid,
   };
 }

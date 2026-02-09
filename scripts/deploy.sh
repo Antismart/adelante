@@ -16,7 +16,7 @@ USDC_CONTRACT="usdc.fakes.testnet"
 
 # Check if NEAR CLI is installed
 if ! command -v near &> /dev/null; then
-    echo "Error: NEAR CLI not found. Install with: npm install -g near-cli"
+    echo "Error: NEAR CLI not found. Install with: cargo install near-cli-rs"
     exit 1
 fi
 
@@ -26,41 +26,29 @@ if [ ! -f "out/invoice.wasm" ]; then
     exit 1
 fi
 
-# Deploy Invoice Contract
+# Deploy + Initialize Invoice Contract
 echo ""
 echo "Deploying Invoice Contract to $INVOICE_CONTRACT..."
-near deploy --accountId $INVOICE_CONTRACT --wasmFile out/invoice.wasm --networkId $NETWORK
+near deploy $INVOICE_CONTRACT out/invoice.wasm \
+    --init-function new \
+    --init-args '{"marketplace_contract": "'$MARKETPLACE_CONTRACT'", "escrow_contract": "'$ESCROW_CONTRACT'", "admin": "'$MASTER_ACCOUNT'"}' \
+    --network-id $NETWORK
 
-# Initialize Invoice Contract
-echo "Initializing Invoice Contract..."
-near call $INVOICE_CONTRACT new \
-    '{"marketplace_contract": "'$MARKETPLACE_CONTRACT'", "escrow_contract": "'$ESCROW_CONTRACT'"}' \
-    --accountId $INVOICE_CONTRACT \
-    --networkId $NETWORK
-
-# Deploy Marketplace Contract
+# Deploy + Initialize Marketplace Contract
 echo ""
 echo "Deploying Marketplace Contract to $MARKETPLACE_CONTRACT..."
-near deploy --accountId $MARKETPLACE_CONTRACT --wasmFile out/marketplace.wasm --networkId $NETWORK
+near deploy $MARKETPLACE_CONTRACT out/marketplace.wasm \
+    --init-function new \
+    --init-args '{"invoice_contract": "'$INVOICE_CONTRACT'", "escrow_contract": "'$ESCROW_CONTRACT'", "usdc_contract": "'$USDC_CONTRACT'", "fee_recipient": "'$MARKETPLACE_CONTRACT'"}' \
+    --network-id $NETWORK
 
-# Initialize Marketplace Contract
-echo "Initializing Marketplace Contract..."
-near call $MARKETPLACE_CONTRACT new \
-    '{"invoice_contract": "'$INVOICE_CONTRACT'", "escrow_contract": "'$ESCROW_CONTRACT'", "usdc_contract": "'$USDC_CONTRACT'", "fee_recipient": "'$MARKETPLACE_CONTRACT'"}' \
-    --accountId $MARKETPLACE_CONTRACT \
-    --networkId $NETWORK
-
-# Deploy Escrow Contract
+# Deploy + Initialize Escrow Contract
 echo ""
 echo "Deploying Escrow Contract to $ESCROW_CONTRACT..."
-near deploy --accountId $ESCROW_CONTRACT --wasmFile out/escrow.wasm --networkId $NETWORK
-
-# Initialize Escrow Contract
-echo "Initializing Escrow Contract..."
-near call $ESCROW_CONTRACT new \
-    '{"invoice_contract": "'$INVOICE_CONTRACT'", "marketplace_contract": "'$MARKETPLACE_CONTRACT'", "usdc_contract": "'$USDC_CONTRACT'", "admin": "'$ESCROW_CONTRACT'"}' \
-    --accountId $ESCROW_CONTRACT \
-    --networkId $NETWORK
+near deploy $ESCROW_CONTRACT out/escrow.wasm \
+    --init-function new \
+    --init-args '{"invoice_contract": "'$INVOICE_CONTRACT'", "marketplace_contract": "'$MARKETPLACE_CONTRACT'", "usdc_contract": "'$USDC_CONTRACT'", "admin": "'$ESCROW_CONTRACT'"}' \
+    --network-id $NETWORK
 
 echo ""
 echo "================================================="

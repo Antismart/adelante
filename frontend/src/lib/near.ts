@@ -75,9 +75,6 @@ export const marketplaceContract = {
   getListing: (listingId: string) =>
     viewMethod(CONTRACT_IDS.marketplace, "get_listing", { listing_id: listingId }),
 
-  getBids: (listingId: string) =>
-    viewMethod(CONTRACT_IDS.marketplace, "get_bids", { listing_id: listingId }),
-
   getListingsBySeller: (seller: string) =>
     viewMethod(CONTRACT_IDS.marketplace, "get_listings_by_seller", { seller }),
 };

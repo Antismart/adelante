@@ -35,19 +35,6 @@ pub struct ListingView {
     pub annualized_yield: f64,
 }
 
-/// Bid on a listing
-#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone, NearSchema)]
-#[serde(crate = "near_sdk::serde")]
-#[borsh(crate = "near_sdk::borsh")]
-pub struct Bid {
-    pub id: String,
-    pub listing_id: String,
-    pub bidder: AccountId,
-    pub amount: U128,
-    pub created_at: u64,
-    pub active: bool,
-}
-
 /// Cross-contract interface for Invoice contract
 #[ext_contract(ext_invoice)]
 pub trait InvoiceContract {
@@ -83,15 +70,41 @@ pub trait FungibleToken {
     ) -> U128;
 }
 
+/// Old Bid struct (for migration deserialization only)
+#[derive(BorshDeserialize, BorshSerialize)]
+#[borsh(crate = "near_sdk::borsh")]
+pub struct OldBid {
+    pub id: String,
+    pub listing_id: String,
+    pub bidder: AccountId,
+    pub amount: U128,
+    pub created_at: u64,
+    pub active: bool,
+}
+
+/// Old contract state (for migration from bidding version)
+#[derive(BorshDeserialize)]
+#[borsh(crate = "near_sdk::borsh")]
+pub struct OldMarketplaceContract {
+    listings: IterableMap<String, Listing>,
+    listings_by_invoice: LookupMap<String, String>,
+    bids: IterableMap<String, Vec<OldBid>>,
+    listing_count: u64,
+    bid_count: u64,
+    invoice_contract: AccountId,
+    escrow_contract: AccountId,
+    usdc_contract: AccountId,
+    fee_basis_points: u16,
+    fee_recipient: AccountId,
+}
+
 /// Marketplace Contract
 #[near(contract_state)]
 #[derive(PanicOnDefault)]
 pub struct MarketplaceContract {
     listings: IterableMap<String, Listing>,
     listings_by_invoice: LookupMap<String, String>,
-    bids: IterableMap<String, Vec<Bid>>,
     listing_count: u64,
-    bid_count: u64,
 
     invoice_contract: AccountId,
     escrow_contract: AccountId,
@@ -114,14 +127,29 @@ impl MarketplaceContract {
         Self {
             listings: IterableMap::new(b"l"),
             listings_by_invoice: LookupMap::new(b"i"),
-            bids: IterableMap::new(b"b"),
             listing_count: 0,
-            bid_count: 0,
             invoice_contract,
             escrow_contract,
             usdc_contract,
             fee_basis_points: 100, // 1% fee
             fee_recipient,
+        }
+    }
+
+    /// Migrate from old state to new state (removes bidding system)
+    #[private]
+    #[init(ignore_state)]
+    pub fn migrate() -> Self {
+        let old: OldMarketplaceContract = env::state_read().expect("Failed to read old state");
+        Self {
+            listings: old.listings,
+            listings_by_invoice: old.listings_by_invoice,
+            listing_count: old.listing_count,
+            invoice_contract: old.invoice_contract,
+            escrow_contract: old.escrow_contract,
+            usdc_contract: old.usdc_contract,
+            fee_basis_points: old.fee_basis_points,
+            fee_recipient: old.fee_recipient,
         }
     }
 
@@ -206,7 +234,7 @@ impl MarketplaceContract {
     }
 
     /// NEP-141 callback: Receive USDC tokens for purchasing invoices
-    /// Message format: "buy_listing:LST-000001" or "place_bid:LST-000001:amount"
+    /// Message format: "buy_listing:LST-000001"
     pub fn ft_on_transfer(
         &mut self,
         sender_id: AccountId,
@@ -229,11 +257,6 @@ impl MarketplaceContract {
 
         match action {
             "buy_listing" => self.process_usdc_purchase(sender_id, amount, listing_id),
-            "place_bid" => {
-                // For bids, we could hold the USDC, but for simplicity,
-                // we'll keep the bid metadata-only approach
-                env::panic_str("Bidding with USDC not yet implemented. Use buy_listing.");
-            }
             _ => {
                 env::panic_str("Unknown action. Use 'buy_listing:LST-000001'");
             }
@@ -400,150 +423,12 @@ impl MarketplaceContract {
         self.listings.insert(listing_id.clone(), updated_listing);
         self.listings_by_invoice.remove(&listing.invoice_id);
 
-        // Refund any bids
-        if let Some(bids) = self.bids.get(&listing_id).cloned() {
-            for bid in bids {
-                if bid.active {
-                    env::log_str(&format!("Refunding bid {} to {}", bid.id, bid.bidder));
-                    // In production: refund USDC to bidder
-                }
-            }
-        }
-
         env::log_str(&format!("Listing {} cancelled", listing_id));
 
         // Call invoice contract to unlist
         ext_invoice::ext(self.invoice_contract.clone())
             .with_static_gas(GAS_FOR_CROSS_CONTRACT)
             .unlist_invoice(listing.invoice_id)
-    }
-
-    /// Place a bid on a listing
-    #[payable]
-    pub fn place_bid(&mut self, listing_id: String, amount: U128) -> String {
-        let bidder = env::predecessor_account_id();
-        let listing = self
-            .listings
-            .get(&listing_id)
-            .expect("Listing not found")
-            .clone();
-
-        assert!(listing.active, "Listing is not active");
-        assert!(listing.seller != bidder, "Cannot bid on your own listing");
-
-        if let Some(min_price) = listing.min_price {
-            assert!(amount.0 >= min_price.0, "Bid below minimum price");
-        }
-
-        // For demo: accept any attached NEAR
-        // In production: require USDC deposit
-        let deposit = env::attached_deposit();
-        assert!(
-            deposit >= NearToken::from_millinear(1),
-            "Must attach deposit for bid"
-        );
-
-        self.bid_count += 1;
-        let bid_id = format!("BID-{:06}", self.bid_count);
-
-        let bid = Bid {
-            id: bid_id.clone(),
-            listing_id: listing_id.clone(),
-            bidder,
-            amount,
-            created_at: env::block_timestamp_ms(),
-            active: true,
-        };
-
-        let mut listing_bids = self.bids.get(&listing_id).cloned().unwrap_or_default();
-        listing_bids.push(bid);
-        self.bids.insert(listing_id, listing_bids);
-
-        env::log_str(&format!("Bid {} placed", bid_id));
-        bid_id
-    }
-
-    /// Accept a bid (seller only)
-    #[payable]
-    pub fn accept_bid(&mut self, listing_id: String, bid_id: String) -> Promise {
-        let caller = env::predecessor_account_id();
-        let listing = self
-            .listings
-            .get(&listing_id)
-            .expect("Listing not found")
-            .clone();
-
-        assert!(listing.seller == caller, "Only seller can accept bids");
-        assert!(listing.active, "Listing is not active");
-
-        let bids = self.bids.get(&listing_id).expect("No bids found").clone();
-        let bid = bids
-            .iter()
-            .find(|b| b.id == bid_id && b.active)
-            .expect("Bid not found or inactive")
-            .clone();
-
-        // Deactivate listing
-        let mut updated_listing = listing.clone();
-        updated_listing.active = false;
-        self.listings.insert(listing_id.clone(), updated_listing);
-        self.listings_by_invoice.remove(&listing.invoice_id);
-
-        // Deactivate all bids and refund non-winning bids
-        let updated_bids: Vec<Bid> = bids
-            .into_iter()
-            .map(|mut b| {
-                if b.active && b.id != bid_id {
-                    env::log_str(&format!("Refunding bid {} to {}", b.id, b.bidder));
-                    // In production: refund USDC
-                }
-                b.active = false;
-                b
-            })
-            .collect();
-        self.bids.insert(listing_id.clone(), updated_bids);
-
-        env::log_str(&format!(
-            "Bid {} accepted for listing {}",
-            bid_id, listing_id
-        ));
-
-        // Transfer invoice and create escrow
-        ext_invoice::ext(self.invoice_contract.clone())
-            .with_static_gas(GAS_FOR_CROSS_CONTRACT)
-            .transfer_invoice(listing.invoice_id.clone(), bid.bidder.clone())
-            .then(
-                ext_escrow::ext(self.escrow_contract.clone())
-                    .with_static_gas(GAS_FOR_CROSS_CONTRACT)
-                    .create_escrow(
-                        listing.invoice_id,
-                        listing.seller,
-                        bid.bidder,
-                        bid.amount,
-                        listing.invoice_amount,
-                        listing.due_date,
-                    ),
-            )
-    }
-
-    /// Cancel a bid (bidder only)
-    pub fn cancel_bid(&mut self, listing_id: String, bid_id: String) {
-        let caller = env::predecessor_account_id();
-        let mut bids = self.bids.get(&listing_id).expect("No bids found").clone();
-
-        let bid_idx = bids
-            .iter()
-            .position(|b| b.id == bid_id)
-            .expect("Bid not found");
-
-        assert!(bids[bid_idx].bidder == caller, "Only bidder can cancel bid");
-        assert!(bids[bid_idx].active, "Bid is not active");
-
-        bids[bid_idx].active = false;
-        self.bids.insert(listing_id, bids);
-
-        env::log_str(&format!("Bid {} cancelled", bid_id));
-        // In production: refund USDC to bidder
     }
 
     /// Update fee (admin only)
@@ -600,17 +485,6 @@ impl MarketplaceContract {
         self.listings_by_invoice
             .get(&invoice_id)
             .and_then(|id| self.listings.get(id).cloned())
-    }
-
-    /// Get bids for a listing
-    pub fn get_bids(&self, listing_id: String) -> Vec<Bid> {
-        self.bids
-            .get(&listing_id)
-            .cloned()
-            .unwrap_or_default()
-            .into_iter()
-            .filter(|bid| bid.active)
-            .collect()
     }
 
     /// Get listings by seller

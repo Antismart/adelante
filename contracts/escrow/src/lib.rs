@@ -37,6 +37,9 @@ pub struct EscrowEntry {
     /// Whether USDC funds have been deposited into this escrow
     #[serde(default)]
     pub funds_deposited: bool,
+    /// Whether the debtor has paid the invoice (confirmed by admin/oracle)
+    #[serde(default)]
+    pub debtor_paid: bool,
 }
 
 /// Escrow statistics view
@@ -189,6 +192,7 @@ impl EscrowContract {
             settled_at: None,
             dispute_reason: None,
             funds_deposited: false, // Will be set to true when USDC arrives via ft_on_transfer
+            debtor_paid: false, // Will be set to true when admin confirms debtor payment
         };
 
         self.escrows.insert(id.clone(), entry);
@@ -216,8 +220,41 @@ impl EscrowContract {
         id
     }
 
+    /// Confirm that the debtor has paid (admin only)
+    /// In production, this would be called by an oracle or payment processor
+    pub fn confirm_debtor_payment(&mut self, escrow_id: String) {
+        let caller = env::predecessor_account_id();
+        assert!(
+            caller == self.admin,
+            "Only admin can confirm debtor payments"
+        );
+
+        let mut entry = self
+            .escrows
+            .get(&escrow_id)
+            .expect("Escrow not found")
+            .clone();
+
+        assert!(
+            entry.status == EscrowStatus::Active,
+            "Escrow is not active"
+        );
+        assert!(
+            !entry.debtor_paid,
+            "Debtor payment already confirmed"
+        );
+
+        entry.debtor_paid = true;
+        self.escrows.insert(escrow_id.clone(), entry);
+
+        env::log_str(&format!(
+            "Debtor payment confirmed for escrow {}",
+            escrow_id
+        ));
+    }
+
     /// Settle escrow - release funds to investor (buyer)
-    /// When debtor pays the full invoice amount, the buyer receives their investment return
+    /// Requires debtor payment to be confirmed first
     pub fn settle(&mut self, escrow_id: String) -> Promise {
         let caller = env::predecessor_account_id();
         let mut entry = self
@@ -231,17 +268,19 @@ impl EscrowContract {
             "Escrow is not active"
         );
 
-        // Allow seller, buyer, or admin to trigger settlement
-        // In production, this would require proof of payment from debtor
         assert!(
             caller == entry.seller || caller == entry.buyer || caller == self.admin,
             "Unauthorized"
         );
 
-        // Verify funds were deposited
         assert!(
             entry.funds_deposited,
             "No funds deposited in escrow"
+        );
+
+        assert!(
+            entry.debtor_paid,
+            "Debtor payment has not been confirmed"
         );
 
         entry.status = EscrowStatus::Released;
@@ -250,19 +289,15 @@ impl EscrowContract {
 
         env::log_str(&format!(
             "Escrow {} settled: {} USDC released to buyer {}",
-            escrow_id, entry.invoice_amount.0, entry.buyer
+            escrow_id, entry.sale_amount.0, entry.buyer
         ));
 
-        // Transfer USDC to buyer (they get the full invoice amount as debtor paid)
-        // Note: In a real scenario, the debtor payment would come in separately
-        // For now, we release the sale_amount (what buyer paid) back to them
-        // The profit would come from the debtor paying the invoice_amount
         ext_ft::ext(self.usdc_contract.clone())
             .with_static_gas(GAS_FOR_FT_TRANSFER)
             .with_attached_deposit(NearToken::from_yoctonear(1))
             .ft_transfer(
                 entry.buyer.clone(),
-                entry.sale_amount, // Return the buyer's investment
+                entry.sale_amount,
                 Some(format!("settlement:{}", escrow_id)),
             )
             .then(
@@ -270,32 +305,6 @@ impl EscrowContract {
                     .with_static_gas(GAS_FOR_CROSS_CONTRACT)
                     .mark_settled(entry.invoice_id)
             )
-    }
-
-    /// Simulate debtor payment (for demo purposes)
-    /// In production, this would be handled by off-chain payment detection
-    pub fn simulate_debtor_payment(&mut self, escrow_id: String) -> Promise {
-        // Anyone can trigger this in demo mode
-        // In production, this would be restricted to oracles or verified payment processors
-
-        let entry = self
-            .escrows
-            .get(&escrow_id)
-            .expect("Escrow not found")
-            .clone();
-
-        assert!(
-            entry.status == EscrowStatus::Active,
-            "Escrow is not active"
-        );
-
-        env::log_str(&format!(
-            "Debtor payment received for escrow {}: {} USDC",
-            escrow_id, entry.invoice_amount.0
-        ));
-
-        // Auto-settle after payment
-        self.settle(escrow_id)
     }
 
     /// Open a dispute
