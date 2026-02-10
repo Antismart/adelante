@@ -131,7 +131,7 @@ export function Invoice() {
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 text-primary-500 mx-auto mb-4 animate-spin" />
-          <p className="text-neutral-600">Loading invoice...</p>
+          <p className="text-neutral-400">Loading invoice...</p>
         </div>
       </div>
     );
@@ -142,7 +142,7 @@ export function Invoice() {
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
           <FileText className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-neutral-900 mb-2">
+          <h2 className="text-xl font-bold text-neutral-50 mb-2">
             {error || "Invoice not found"}
           </h2>
           <Link to="/marketplace">
@@ -171,7 +171,7 @@ export function Invoice() {
         {/* Back Button */}
         <Link
           to="/marketplace"
-          className="inline-flex items-center text-neutral-600 hover:text-neutral-900 mb-6"
+          className="inline-flex items-center text-neutral-400 hover:text-neutral-200 mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Marketplace
@@ -181,25 +181,25 @@ export function Invoice() {
           {/* Invoice Details */}
           <div className="lg:col-span-2 space-y-6">
             {/* Header Card */}
-            <div className="bg-white rounded-xl border border-neutral-200 p-6">
+            <div className="glass-card rounded-xl p-6">
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <div className="flex items-center space-x-3 mb-2">
-                    <h1 className="text-2xl font-bold text-neutral-900">
+                    <h1 className="text-2xl font-bold text-neutral-50">
                       {invoice.id}
                     </h1>
                     <StatusBadge status={invoice.status} />
                   </div>
-                  <p className="text-neutral-600">
+                  <p className="text-neutral-400">
                     Created by{" "}
-                    <span className="font-medium text-neutral-900">
+                    <span className="font-medium text-neutral-50">
                       {invoice.creator}
                     </span>
                   </p>
                 </div>
               </div>
 
-              <hr className="my-4" />
+              <hr className="my-4 border-white/10" />
 
               {/* Debtor Info */}
               <div className="space-y-3">
@@ -207,7 +207,7 @@ export function Invoice() {
                   <User className="w-5 h-5 text-neutral-400" />
                   <div>
                     <p className="text-sm text-neutral-500">Debtor</p>
-                    <p className="font-medium text-neutral-900">
+                    <p className="font-medium text-neutral-50">
                       {invoice.debtor_name}
                     </p>
                   </div>
@@ -217,7 +217,7 @@ export function Invoice() {
                     <Mail className="w-5 h-5 text-neutral-400" />
                     <div>
                       <p className="text-sm text-neutral-500">Contact</p>
-                      <p className="font-medium text-neutral-900">
+                      <p className="font-medium text-neutral-50">
                         {invoice.debtor_email}
                       </p>
                     </div>
@@ -227,26 +227,26 @@ export function Invoice() {
                   <Clock className="w-5 h-5 text-neutral-400" />
                   <div>
                     <p className="text-sm text-neutral-500">Due Date</p>
-                    <p className="font-medium text-neutral-900">
+                    <p className="font-medium text-neutral-50">
                       {formatDate(invoice.due_date)} ({daysUntilDue} days)
                     </p>
                   </div>
                 </div>
               </div>
 
-              <hr className="my-4" />
+              <hr className="my-4 border-white/10" />
 
               {/* Description */}
               <div>
-                <h3 className="font-medium text-neutral-900 mb-2">
+                <h3 className="font-medium text-neutral-50 mb-2">
                   Description
                 </h3>
-                <p className="text-neutral-600">{invoice.description}</p>
+                <p className="text-neutral-400">{invoice.description}</p>
               </div>
 
               {/* Document */}
               <div className="mt-4">
-                <button className="inline-flex items-center space-x-2 text-primary-600 hover:text-primary-700">
+                <button className="inline-flex items-center space-x-2 text-primary-400 hover:text-primary-300">
                   <FileText className="w-4 h-4" />
                   <span>View Invoice PDF</span>
                   <ExternalLink className="w-3 h-3" />
@@ -258,8 +258,8 @@ export function Invoice() {
             </div>
 
             {/* Risk Assessment Card */}
-            <div className="bg-white rounded-xl border border-neutral-200 p-6">
-              <h3 className="font-semibold text-neutral-900 mb-4 flex items-center">
+            <div className="glass-card rounded-xl p-6">
+              <h3 className="font-semibold text-neutral-50 mb-4 flex items-center">
                 <Shield className="w-5 h-5 mr-2 text-neutral-400" />
                 Risk Assessment
               </h3>
@@ -273,27 +273,27 @@ export function Invoice() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-neutral-500">Score</p>
-                  <p className="text-lg font-semibold text-neutral-900">
+                  <p className="text-lg font-semibold text-neutral-50">
                     {invoice.risk_score}/100
                   </p>
                 </div>
               </div>
 
               {/* Risk Bar */}
-              <div className="h-2 bg-neutral-200 rounded-full overflow-hidden">
+              <div className="h-2 bg-neutral-700 rounded-full overflow-hidden">
                 <div
                   className={`h-full transition-all ${
                     invoice.risk_score <= 33
-                      ? "bg-green-500"
+                      ? "bg-emerald-400"
                       : invoice.risk_score <= 66
-                      ? "bg-yellow-500"
-                      : "bg-red-500"
+                      ? "bg-amber-400"
+                      : "bg-red-400"
                   }`}
                   style={{ width: `${invoice.risk_score}%` }}
                 />
               </div>
 
-              <div className="mt-4 text-sm text-neutral-600 space-y-1">
+              <div className="mt-4 text-sm text-neutral-400 space-y-1">
                 <p>
                   {invoice.risk_score <= 33
                     ? "- Low risk profile based on amount and due date"
@@ -309,78 +309,78 @@ export function Invoice() {
 
           {/* Purchase Card */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl border border-neutral-200 p-6 sticky top-24">
+            <div className="glass-card rounded-xl p-6 sticky top-24">
               {isOwner ? (
                 <>
-                  <h3 className="font-semibold text-neutral-900 mb-4">
+                  <h3 className="font-semibold text-neutral-50 mb-4">
                     Your Invoice
                   </h3>
                   <div className="space-y-4">
                     <div className="flex justify-between">
-                      <span className="text-neutral-600">Invoice Value</span>
-                      <span className="font-semibold text-neutral-900">
+                      <span className="text-neutral-400">Invoice Value</span>
+                      <span className="font-semibold text-neutral-50">
                         {formatUSDC(invoice.amount)}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-neutral-600">Status</span>
+                      <span className="text-neutral-400">Status</span>
                       <StatusBadge status={invoice.status} />
                     </div>
                   </div>
                 </>
               ) : isListed && listing ? (
                 <>
-                  <h3 className="font-semibold text-neutral-900 mb-4">
+                  <h3 className="font-semibold text-neutral-50 mb-4">
                     Purchase This Invoice
                   </h3>
 
                   <div className="space-y-4">
                     <div className="flex justify-between">
-                      <span className="text-neutral-600">Invoice Value</span>
-                      <span className="font-semibold text-neutral-900">
+                      <span className="text-neutral-400">Invoice Value</span>
+                      <span className="font-semibold text-neutral-50">
                         {formatUSDC(invoice.amount)}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-neutral-600">Asking Price</span>
-                      <span className="font-semibold text-primary-600">
+                      <span className="text-neutral-400">Asking Price</span>
+                      <span className="font-semibold text-primary-400">
                         {formatUSDC(listing.asking_price)}
                       </span>
                     </div>
-                    <hr />
+                    <hr className="border-white/10" />
                     <div className="flex justify-between">
-                      <span className="text-neutral-600">Your Discount</span>
-                      <span className="font-semibold text-green-600">
+                      <span className="text-neutral-400">Your Discount</span>
+                      <span className="font-semibold text-emerald-400">
                         {formatUSDC(profit)} ({discount.toFixed(1)}%)
                       </span>
                     </div>
                   </div>
 
                   {/* Yield Banner */}
-                  <div className="bg-gradient-to-r from-primary-50 to-primary-100 rounded-lg p-4 mt-4">
+                  <div className="bg-gradient-to-r from-primary-500/10 to-primary-500/5 border border-primary-500/20 rounded-lg p-4 mt-4">
                     <div className="flex items-center space-x-2 mb-1">
-                      <TrendingUp className="w-5 h-5 text-primary-600" />
-                      <span className="font-semibold text-primary-700">
+                      <TrendingUp className="w-5 h-5 text-primary-400" />
+                      <span className="font-semibold text-primary-300">
                         Annualized Yield
                       </span>
                     </div>
-                    <p className="text-2xl font-bold text-primary-700">
+                    <p className="text-2xl font-bold text-primary-300">
                       ~{apy.toFixed(0)}% APY
                     </p>
-                    <p className="text-sm text-primary-600 mt-1">
+                    <p className="text-sm text-primary-400 mt-1">
                       Based on {discount.toFixed(1)}% in {daysUntilDue} days
                     </p>
                   </div>
 
                   {/* USDC Balance */}
                   {isConnected && (
-                    <div className="bg-neutral-50 rounded-lg p-3 mt-4">
+                    <div className="bg-surface-2 border border-white/5 rounded-lg p-3 mt-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           <Wallet className="w-4 h-4 text-neutral-400" />
-                          <span className="text-sm text-neutral-600">Your USDC Balance</span>
+                          <span className="text-sm text-neutral-400">Your USDC Balance</span>
                         </div>
-                        <span className="font-medium text-neutral-900">
+                        <span className="font-medium text-neutral-50">
                           ${formatUSDCBalance(usdcBalance)}
                         </span>
                       </div>
@@ -424,18 +424,18 @@ export function Invoice() {
                 </>
               ) : (
                 <>
-                  <h3 className="font-semibold text-neutral-900 mb-4">
+                  <h3 className="font-semibold text-neutral-50 mb-4">
                     Invoice Details
                   </h3>
                   <div className="space-y-4">
                     <div className="flex justify-between">
-                      <span className="text-neutral-600">Invoice Value</span>
-                      <span className="font-semibold text-neutral-900">
+                      <span className="text-neutral-400">Invoice Value</span>
+                      <span className="font-semibold text-neutral-50">
                         {formatUSDC(invoice.amount)}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-neutral-600">Status</span>
+                      <span className="text-neutral-400">Status</span>
                       <StatusBadge status={invoice.status} />
                     </div>
                   </div>
@@ -530,30 +530,30 @@ function BuyModal({
     >
       {step === "confirm" && (
         <div className="space-y-4">
-          <div className="bg-neutral-50 rounded-lg p-4">
+          <div className="bg-surface-2 border border-white/5 rounded-lg p-4">
             <div className="flex justify-between mb-2">
-              <span className="text-neutral-600">Invoice</span>
-              <span className="font-medium">{invoice.id}</span>
+              <span className="text-neutral-400">Invoice</span>
+              <span className="font-medium text-neutral-50">{invoice.id}</span>
             </div>
             <div className="flex justify-between mb-2">
-              <span className="text-neutral-600">Debtor</span>
-              <span className="font-medium">{invoice.debtor_name}</span>
+              <span className="text-neutral-400">Debtor</span>
+              <span className="font-medium text-neutral-50">{invoice.debtor_name}</span>
             </div>
             <div className="flex justify-between mb-2">
-              <span className="text-neutral-600">Invoice Value</span>
-              <span className="font-medium">{formatUSDC(invoice.amount)}</span>
+              <span className="text-neutral-400">Invoice Value</span>
+              <span className="font-medium text-neutral-50">{formatUSDC(invoice.amount)}</span>
             </div>
-            <hr className="my-2" />
+            <hr className="my-2 border-white/10" />
             <div className="flex justify-between">
-              <span className="text-neutral-900 font-semibold">You Pay</span>
-              <span className="text-primary-600 font-bold">
+              <span className="text-neutral-50 font-semibold">You Pay</span>
+              <span className="text-primary-400 font-bold">
                 {formatUSDC(listing.asking_price)}
               </span>
             </div>
           </div>
 
-          <div className="bg-green-50 rounded-lg p-4">
-            <p className="text-green-700 text-sm">
+          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4">
+            <p className="text-emerald-300 text-sm">
               You will earn{" "}
               <span className="font-semibold">
                 {formatUSDC(Number(invoice.amount) - Number(listing.asking_price))}
@@ -578,11 +578,11 @@ function BuyModal({
 
       {step === "buying" && (
         <div className="text-center py-8">
-          <div className="animate-spin w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full mx-auto mb-4" />
-          <p className="text-lg font-semibold text-neutral-900">
+          <div className="animate-spin w-12 h-12 border-4 border-primary-800 border-t-primary-400 rounded-full mx-auto mb-4" />
+          <p className="text-lg font-semibold text-neutral-50">
             Processing Purchase...
           </p>
-          <p className="text-neutral-600 mt-2">
+          <p className="text-neutral-400 mt-2">
             Please confirm the transaction in your wallet
           </p>
         </div>
@@ -590,9 +590,9 @@ function BuyModal({
 
       {step === "success" && (
         <div className="text-center py-8">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg
-              className="w-8 h-8 text-green-600"
+              className="w-8 h-8 text-emerald-400"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -605,10 +605,10 @@ function BuyModal({
               />
             </svg>
           </div>
-          <p className="text-lg font-semibold text-neutral-900">
+          <p className="text-lg font-semibold text-neutral-50">
             Invoice Purchased!
           </p>
-          <p className="text-neutral-600 mt-2">
+          <p className="text-neutral-400 mt-2">
             You now own {invoice.id}. Funds are held in escrow until the debtor
             pays.
           </p>
@@ -617,7 +617,7 @@ function BuyModal({
               href={`https://testnet.nearblocks.io/txns/${txHash}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center text-primary-600 hover:text-primary-700 mt-3"
+              className="inline-flex items-center text-primary-400 hover:text-primary-300 mt-3"
             >
               View transaction <ExternalLink className="w-3 h-3 ml-1" />
             </a>
@@ -630,13 +630,13 @@ function BuyModal({
 
       {step === "error" && (
         <div className="text-center py-8">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="w-8 h-8 text-red-600" />
+          <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-red-400" />
           </div>
-          <p className="text-lg font-semibold text-neutral-900">
+          <p className="text-lg font-semibold text-neutral-50">
             Purchase Failed
           </p>
-          <p className="text-neutral-600 mt-2">
+          <p className="text-neutral-400 mt-2">
             {errorMessage || "Something went wrong. Please try again."}
           </p>
           <div className="mt-6 flex justify-center space-x-3">
