@@ -232,11 +232,11 @@ export function getRiskLevel(score: number): {
   emoji: string;
 } {
   if (score <= 33) {
-    return { label: "Low", color: "text-green-600", emoji: "🟢" };
+    return { label: "Low", color: "text-emerald-400", emoji: "🟢" };
   } else if (score <= 66) {
-    return { label: "Medium", color: "text-yellow-600", emoji: "🟡" };
+    return { label: "Medium", color: "text-amber-400", emoji: "🟡" };
   } else {
-    return { label: "High", color: "text-red-600", emoji: "🔴" };
+    return { label: "High", color: "text-red-400", emoji: "🔴" };
   }
 }
 
@@ -249,18 +249,18 @@ export function getStatusStyle(status: string): {
 } {
   switch (status) {
     case "Draft":
-      return { bg: "bg-gray-100", text: "text-gray-700" };
+      return { bg: "bg-neutral-500/10", text: "text-neutral-300" };
     case "Listed":
-      return { bg: "bg-blue-100", text: "text-blue-700" };
+      return { bg: "bg-blue-500/10", text: "text-blue-400" };
     case "Sold":
-      return { bg: "bg-purple-100", text: "text-purple-700" };
+      return { bg: "bg-purple-500/10", text: "text-purple-400" };
     case "Settled":
-      return { bg: "bg-green-100", text: "text-green-700" };
+      return { bg: "bg-emerald-500/10", text: "text-emerald-400" };
     case "Disputed":
-      return { bg: "bg-red-100", text: "text-red-700" };
+      return { bg: "bg-red-500/10", text: "text-red-400" };
     case "Cancelled":
-      return { bg: "bg-gray-100", text: "text-gray-500" };
+      return { bg: "bg-neutral-500/10", text: "text-neutral-500" };
     default:
-      return { bg: "bg-gray-100", text: "text-gray-700" };
+      return { bg: "bg-neutral-500/10", text: "text-neutral-300" };
   }
 }
