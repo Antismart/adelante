@@ -103,16 +103,16 @@ export function Marketplace() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-neutral-900">
+          <h1 className="text-2xl font-bold text-neutral-50">
             Invoice Marketplace
           </h1>
-          <p className="text-neutral-600 mt-1">
+          <p className="text-neutral-400 mt-1">
             Earn yield by funding small business invoices
           </p>
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-xl border border-neutral-200 p-4 mb-8">
+        <div className="glass-card rounded-xl p-4 mb-8">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
@@ -121,14 +121,14 @@ export function Marketplace() {
                 placeholder="Search by debtor or description..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full pl-10 pr-4 py-2 border border-neutral-700 rounded-lg bg-surface-2 text-neutral-50 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
               />
             </div>
             <div className="flex gap-2">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="px-4 py-2 border border-neutral-700 rounded-lg bg-surface-2 text-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
               >
                 <option value="yield">Highest Yield</option>
                 <option value="amount">Highest Amount</option>
@@ -146,7 +146,7 @@ export function Marketplace() {
           </div>
 
           {showFilters && (
-            <div className="mt-4 pt-4 border-t border-neutral-200 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="mt-4 pt-4 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-4">
               <Input
                 label="Min Amount"
                 type="number"
@@ -189,21 +189,21 @@ export function Marketplace() {
 
         {/* Stats Bar */}
         <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-xl p-4 border border-neutral-200 text-center">
-            <p className="text-sm text-neutral-600">Active Listings</p>
-            <p className="text-2xl font-bold text-neutral-900">
+          <div className="glass-card rounded-xl p-4 text-center">
+            <p className="text-sm text-neutral-400">Active Listings</p>
+            <p className="text-2xl font-bold text-neutral-50">
               {filteredListings.length}
             </p>
           </div>
-          <div className="bg-white rounded-xl p-4 border border-neutral-200 text-center">
-            <p className="text-sm text-neutral-600">Total Value</p>
-            <p className="text-2xl font-bold text-neutral-900">
+          <div className="glass-card rounded-xl p-4 text-center">
+            <p className="text-sm text-neutral-400">Total Value</p>
+            <p className="text-2xl font-bold text-neutral-50">
               {formatUSDC(totalValue)}
             </p>
           </div>
-          <div className="bg-white rounded-xl p-4 border border-neutral-200 text-center">
-            <p className="text-sm text-neutral-600">Avg. Discount</p>
-            <p className="text-2xl font-bold text-neutral-900">
+          <div className="glass-card rounded-xl p-4 text-center">
+            <p className="text-sm text-neutral-400">Avg. Discount</p>
+            <p className="text-2xl font-bold text-neutral-50">
               {avgDiscount.toFixed(1)}%
             </p>
           </div>
@@ -211,16 +211,16 @@ export function Marketplace() {
 
         {/* Loading State */}
         {isLoading && (
-          <div className="text-center py-12 bg-white rounded-xl border border-neutral-200">
+          <div className="text-center py-12 glass-card rounded-xl">
             <Loader2 className="w-12 h-12 text-primary-500 mx-auto mb-4 animate-spin" />
-            <p className="text-neutral-600">Loading listings...</p>
+            <p className="text-neutral-400">Loading listings...</p>
           </div>
         )}
 
         {/* Error State */}
         {error && (
-          <div className="text-center py-12 bg-white rounded-xl border border-red-200">
-            <p className="text-red-600">{error}</p>
+          <div className="text-center py-12 glass-card rounded-xl border border-danger-500/20">
+            <p className="text-red-400">{error}</p>
             <Button className="mt-4" onClick={fetchActiveListings}>
               Try Again
             </Button>
@@ -237,9 +237,9 @@ export function Marketplace() {
         )}
 
         {!isLoading && !error && filteredListings.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-xl border border-neutral-200">
+          <div className="text-center py-12 glass-card rounded-xl">
             <Search className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
-            <p className="text-neutral-600">No listings found</p>
+            <p className="text-neutral-400">No listings found</p>
             <p className="text-sm text-neutral-500 mt-1">
               Try adjusting your filters or check back later
             </p>
@@ -261,12 +261,12 @@ function ListingCard({ listing }: { listing: ListingWithInvoice }) {
   const risk = getRiskLevel(invoice.risk_score);
 
   return (
-    <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden hover:shadow-lg transition-shadow">
+    <div className="glass-card glass-card-hover rounded-xl overflow-hidden transition-all duration-300">
       <div className="p-6">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h3 className="font-semibold text-neutral-900 text-lg">
+            <h3 className="font-semibold text-neutral-50 text-lg">
               {invoice.debtor_name}
             </h3>
             <p className="text-sm text-neutral-500 truncate max-w-[200px]">
@@ -284,35 +284,35 @@ function ListingCard({ listing }: { listing: ListingWithInvoice }) {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <p className="text-sm text-neutral-500">Invoice Value</p>
-            <p className="text-lg font-semibold text-neutral-900">
+            <p className="text-lg font-semibold text-neutral-50">
               {formatUSDC(invoice.amount)}
             </p>
           </div>
           <div>
             <p className="text-sm text-neutral-500">Your Price</p>
-            <p className="text-lg font-semibold text-primary-600">
+            <p className="text-lg font-semibold text-primary-400">
               {formatUSDC(listing.listing.asking_price)}
             </p>
           </div>
         </div>
 
         {/* Yield Badge */}
-        <div className="bg-gradient-to-r from-primary-50 to-primary-100 rounded-lg p-3 mb-4">
+        <div className="bg-gradient-to-r from-primary-500/10 to-primary-500/5 border border-primary-500/20 rounded-lg p-3 mb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <TrendingUp className="w-5 h-5 text-primary-600" />
-              <span className="font-semibold text-primary-700">
+              <TrendingUp className="w-5 h-5 text-primary-400" />
+              <span className="font-semibold text-primary-300">
                 {discount.toFixed(1)}% DISCOUNT
               </span>
             </div>
-            <span className="text-sm text-primary-600">
+            <span className="text-sm text-primary-400">
               ~{apy.toFixed(0)}% APY
             </span>
           </div>
         </div>
 
         {/* Details */}
-        <div className="flex items-center justify-between text-sm text-neutral-600 mb-4">
+        <div className="flex items-center justify-between text-sm text-neutral-400 mb-4">
           <div className="flex items-center space-x-1">
             <Clock className="w-4 h-4" />
             <span>Due in {daysUntilDue} days</span>
