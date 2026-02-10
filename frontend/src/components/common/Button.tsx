@@ -21,17 +21,17 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+      "inline-flex items-center justify-center font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed";
 
     const variants = {
       primary:
-        "bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500",
+        "bg-primary-500 text-white hover:bg-primary-400 focus:ring-primary-500/40 shadow-[0_0_15px_rgba(6,182,212,0.15)] hover:shadow-[0_0_25px_rgba(6,182,212,0.3)] transition-all",
       secondary:
-        "bg-neutral-100 text-neutral-900 hover:bg-neutral-200 focus:ring-neutral-500",
+        "bg-surface-3 text-neutral-200 hover:bg-surface-4 focus:ring-neutral-500/40 border border-white/5",
       outline:
-        "border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50 focus:ring-primary-500",
-      ghost: "text-neutral-700 hover:bg-neutral-100 focus:ring-neutral-500",
-      danger: "bg-danger-500 text-white hover:bg-danger-600 focus:ring-danger-500",
+        "border border-neutral-600 bg-transparent text-neutral-200 hover:bg-white/5 hover:border-neutral-500 focus:ring-primary-500/40",
+      ghost: "text-neutral-300 hover:bg-white/5 hover:text-neutral-100 focus:ring-neutral-500/40",
+      danger: "bg-danger-500 text-white hover:bg-danger-600 focus:ring-danger-500/40 shadow-[0_0_15px_rgba(248,113,113,0.15)]",
     };
 
     const sizes = {
