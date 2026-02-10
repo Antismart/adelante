@@ -1,10 +1,11 @@
 import { useState, useCallback } from "react";
+import { actionCreators } from "@near-js/transactions";
 import { useWalletStore } from "../stores/walletStore";
 import { useInvoiceStore } from "../stores/invoiceStore";
 import { CONTRACT_IDS } from "../config/near";
 import type { EscrowEntry, EscrowStats } from "../types";
 
-const THIRTY_TGAS = "30000000000000";
+const THIRTY_TGAS = BigInt("30000000000000");
 
 export function useEscrow() {
   const { selector, accountId } = useWalletStore();
@@ -166,17 +167,13 @@ export function useEscrow() {
         await wallet.signAndSendTransaction({
           receiverId: CONTRACT_IDS.escrow,
           actions: [
-            {
-              type: "FunctionCall",
-              params: {
-                methodName: "settle",
-                args: { escrow_id: escrowId },
-                gas: THIRTY_TGAS,
-                deposit: "1",
-              },
-            },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ] as any,
+            actionCreators.functionCall(
+              "settle",
+              { escrow_id: escrowId },
+              THIRTY_TGAS,
+              BigInt(0),
+            ),
+          ],
         });
 
         // Refresh escrows
@@ -209,17 +206,13 @@ export function useEscrow() {
         await wallet.signAndSendTransaction({
           receiverId: CONTRACT_IDS.escrow,
           actions: [
-            {
-              type: "FunctionCall",
-              params: {
-                methodName: "open_dispute",
-                args: { escrow_id: escrowId, reason },
-                gas: THIRTY_TGAS,
-                deposit: "1",
-              },
-            },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ] as any,
+            actionCreators.functionCall(
+              "open_dispute",
+              { escrow_id: escrowId, reason },
+              THIRTY_TGAS,
+              BigInt(0),
+            ),
+          ],
         });
 
         // Refresh escrows
@@ -252,17 +245,13 @@ export function useEscrow() {
         await wallet.signAndSendTransaction({
           receiverId: CONTRACT_IDS.escrow,
           actions: [
-            {
-              type: "FunctionCall",
-              params: {
-                methodName: "simulate_debtor_payment",
-                args: { escrow_id: escrowId },
-                gas: THIRTY_TGAS,
-                deposit: "1",
-              },
-            },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ] as any,
+            actionCreators.functionCall(
+              "simulate_debtor_payment",
+              { escrow_id: escrowId },
+              THIRTY_TGAS,
+              BigInt(0),
+            ),
+          ],
         });
 
         // Refresh escrows
