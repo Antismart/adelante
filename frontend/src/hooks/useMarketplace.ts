@@ -1,13 +1,14 @@
 import { useState, useCallback } from "react";
+import { actionCreators } from "@near-js/transactions";
 import { useWalletStore } from "../stores/walletStore";
 import { useInvoiceStore } from "../stores/invoiceStore";
 import { CONTRACT_IDS } from "../config/near";
 import type { ListingWithInvoice, ListInvoiceParams, Invoice, Listing } from "../types";
 
-const THIRTY_TGAS = "30000000000000";
-const ONE_HUNDRED_TGAS = "100000000000000";
-const DEPOSIT = "10000000000000000000000"; // 0.01 NEAR
-const ONE_YOCTO = "1";
+const THIRTY_TGAS = BigInt("30000000000000");
+const ONE_HUNDRED_TGAS = BigInt("100000000000000");
+const DEPOSIT = BigInt("10000000000000000000000"); // 0.01 NEAR
+const ONE_YOCTO = BigInt("1");
 
 // Raw listing view from marketplace contract (without invoice data)
 interface ListingView {
@@ -138,24 +139,20 @@ export function useMarketplace() {
         const result = await wallet.signAndSendTransaction({
           receiverId: CONTRACT_IDS.marketplace,
           actions: [
-            {
-              type: "FunctionCall",
-              params: {
-                methodName: "list_invoice",
-                args: {
-                  invoice_id: params.invoice_id,
-                  asking_price: params.asking_price,
-                  invoice_amount: params.invoice_amount,
-                  due_date: params.due_date,
-                  min_price: params.min_price || null,
-                  expires_at: params.expires_at || null,
-                },
-                gas: THIRTY_TGAS,
-                deposit: DEPOSIT,
+            actionCreators.functionCall(
+              "list_invoice",
+              {
+                invoice_id: params.invoice_id,
+                asking_price: params.asking_price,
+                invoice_amount: params.invoice_amount,
+                due_date: params.due_date,
+                min_price: params.min_price || null,
+                expires_at: params.expires_at || null,
               },
-            },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ] as any,
+              THIRTY_TGAS,
+              DEPOSIT,
+            ),
+          ],
         });
 
         // Refresh listings
@@ -191,22 +188,18 @@ export function useMarketplace() {
         const result = await wallet.signAndSendTransaction({
           receiverId: CONTRACT_IDS.usdc,
           actions: [
-            {
-              type: "FunctionCall",
-              params: {
-                methodName: "ft_transfer_call",
-                args: {
-                  receiver_id: CONTRACT_IDS.marketplace,
-                  amount: priceAmount,
-                  memo: null,
-                  msg: `buy_listing:${listingId}`,
-                },
-                gas: ONE_HUNDRED_TGAS,
-                deposit: ONE_YOCTO,
+            actionCreators.functionCall(
+              "ft_transfer_call",
+              {
+                receiver_id: CONTRACT_IDS.marketplace,
+                amount: priceAmount,
+                memo: null,
+                msg: `buy_listing:${listingId}`,
               },
-            },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ] as any,
+              ONE_HUNDRED_TGAS,
+              ONE_YOCTO,
+            ),
+          ],
         });
 
         removeListing(listingId);
@@ -238,17 +231,13 @@ export function useMarketplace() {
         await wallet.signAndSendTransaction({
           receiverId: CONTRACT_IDS.marketplace,
           actions: [
-            {
-              type: "FunctionCall",
-              params: {
-                methodName: "cancel_listing",
-                args: { listing_id: listingId },
-                gas: THIRTY_TGAS,
-                deposit: "1",
-              },
-            },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ] as any,
+            actionCreators.functionCall(
+              "cancel_listing",
+              { listing_id: listingId },
+              THIRTY_TGAS,
+              BigInt(0),
+            ),
+          ],
         });
 
         removeListing(listingId);
