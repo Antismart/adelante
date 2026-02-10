@@ -15,16 +15,16 @@ export function Header() {
   const location = useLocation();
 
   return (
-    <header className="bg-white border-b border-neutral-200">
+    <header className="bg-surface-1/80 border-b border-white/5 backdrop-blur-xl sticky top-0 z-50">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 shadow-[0_0_10px_rgba(6,182,212,0.3)] rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">A</span>
               </div>
-              <span className="text-xl font-bold text-neutral-900">
+              <span className="text-xl font-bold text-neutral-50">
                 Adelante
               </span>
             </Link>
@@ -39,8 +39,8 @@ export function Header() {
                 className={cn(
                   "text-sm font-medium transition-colors",
                   location.pathname === item.href
-                    ? "text-primary-600"
-                    : "text-neutral-600 hover:text-neutral-900"
+                    ? "text-primary-400"
+                    : "text-neutral-400 hover:text-neutral-100"
                 )}
               >
                 {item.name}
@@ -57,7 +57,7 @@ export function Header() {
           <div className="md:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-neutral-600 hover:bg-neutral-100"
+              className="p-2 rounded-lg text-neutral-400 hover:bg-white/5"
             >
               {mobileMenuOpen ? (
                 <X className="w-6 h-6" />
@@ -79,8 +79,8 @@ export function Header() {
                 className={cn(
                   "block px-4 py-2 rounded-lg text-sm font-medium",
                   location.pathname === item.href
-                    ? "bg-primary-50 text-primary-600"
-                    : "text-neutral-600 hover:bg-neutral-50"
+                    ? "bg-primary-500/10 text-primary-400"
+                    : "text-neutral-400 hover:bg-white/5"
                 )}
               >
                 {item.name}
