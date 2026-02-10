@@ -2,12 +2,12 @@ import { Github, ExternalLink } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="bg-neutral-900 text-neutral-400">
+    <footer className="bg-surface-1 text-neutral-400 border-t border-white/5">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           {/* Brand */}
           <div className="flex items-center space-x-2 mb-4 md:mb-0">
-            <div className="w-6 h-6 bg-primary-600 rounded flex items-center justify-center">
+            <div className="w-6 h-6 bg-gradient-to-br from-primary-400 to-primary-600 rounded flex items-center justify-center">
               <span className="text-white font-bold text-sm">A</span>
             </div>
             <span className="text-white font-semibold">Adelante</span>
@@ -37,7 +37,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-6 pt-6 border-t border-neutral-800 text-center text-sm">
+        <div className="mt-6 pt-6 border-t border-white/5 text-center text-sm">
           <p>
             NEAR Protocol Hackathon — "Open Society: From Finance to the Real
             World"
