@@ -49,7 +49,7 @@ export function CrossChainAddresses({ className, compact = false }: CrossChainAd
 
   if (!isEnabled) {
     return (
-      <div className={cn("bg-neutral-50 rounded-lg p-4", className)}>
+      <div className={cn("bg-surface-2 border border-white/5 rounded-lg p-4", className)}>
         <div className="flex items-center space-x-2 text-neutral-500">
           <Globe className="w-5 h-5" />
           <span className="text-sm">Chain Signatures not available on this network</span>
@@ -62,7 +62,7 @@ export function CrossChainAddresses({ className, compact = false }: CrossChainAd
     return (
       <div className={cn("flex items-center space-x-2", className)}>
         <Globe className="w-4 h-4 text-neutral-500" />
-        <span className="text-sm text-neutral-600">
+        <span className="text-sm text-neutral-400">
           {derivedAddresses.length} cross-chain addresses
         </span>
       </div>
@@ -73,12 +73,12 @@ export function CrossChainAddresses({ className, compact = false }: CrossChainAd
   const evmChains = supportedChains.filter((c) => c !== "bitcoin");
 
   return (
-    <div className={cn("bg-white rounded-xl border border-neutral-200", className)}>
+    <div className={cn("glass-card rounded-xl", className)}>
       {/* Header */}
-      <div className="px-4 py-3 border-b border-neutral-100 flex items-center justify-between">
+      <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Globe className="w-5 h-5 text-primary-600" />
-          <h3 className="font-semibold text-neutral-900">Cross-Chain Addresses</h3>
+          <Globe className="w-5 h-5 text-primary-400" />
+          <h3 className="font-semibold text-neutral-50">Cross-Chain Addresses</h3>
         </div>
         <Button
           variant="ghost"
@@ -91,8 +91,8 @@ export function CrossChainAddresses({ className, compact = false }: CrossChainAd
       </div>
 
       {/* Description */}
-      <div className="px-4 py-3 bg-primary-50 border-b border-primary-100">
-        <p className="text-sm text-primary-700">
+      <div className="px-4 py-3 bg-primary-500/5 border-b border-primary-500/10">
+        <p className="text-sm text-primary-300">
           Your NEAR account can control addresses on other blockchains using Chain Signatures.
           Receive payments on Ethereum, Polygon, and more!
         </p>
@@ -100,13 +100,13 @@ export function CrossChainAddresses({ className, compact = false }: CrossChainAd
 
       {/* Error */}
       {error && (
-        <div className="px-4 py-2 bg-red-50 text-red-600 text-sm">
+        <div className="px-4 py-2 bg-red-500/10 text-red-400 text-sm">
           {error}
         </div>
       )}
 
       {/* Addresses List */}
-      <div className="divide-y divide-neutral-100">
+      <div className="divide-y divide-white/5">
         {evmChains.map((chain) => {
           const config = getChainConfig(chain);
           const derived = derivedAddresses.find((a) => a.chain === chain);
@@ -127,7 +127,7 @@ export function CrossChainAddresses({ className, compact = false }: CrossChainAd
 
                 {/* Chain Info */}
                 <div>
-                  <p className="font-medium text-neutral-900">{config.name}</p>
+                  <p className="font-medium text-neutral-50">{config.name}</p>
                   {derived ? (
                     <code className="text-xs text-neutral-500 font-mono">
                       {derived.address.slice(0, 10)}...{derived.address.slice(-8)}
@@ -145,7 +145,7 @@ export function CrossChainAddresses({ className, compact = false }: CrossChainAd
                 <div className="flex items-center space-x-1">
                   <button
                     onClick={() => handleCopy(derived.address, chain)}
-                    className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                     title="Copy address"
                   >
                     {copiedChain === chain ? (
@@ -158,7 +158,7 @@ export function CrossChainAddresses({ className, compact = false }: CrossChainAd
                     href={`${config.addressExplorerUrl}/${derived.address}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                     title="View on explorer"
                   >
                     <ExternalLink className="w-4 h-4 text-neutral-400" />
@@ -171,7 +171,7 @@ export function CrossChainAddresses({ className, compact = false }: CrossChainAd
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-3 bg-neutral-50 border-t border-neutral-100">
+      <div className="px-4 py-3 bg-surface-2 border-t border-white/5">
         <div className="flex items-start space-x-2 text-xs text-neutral-500">
           <Wallet className="w-4 h-4 flex-shrink-0 mt-0.5" />
           <p>
@@ -193,7 +193,7 @@ export function CrossChainBadge() {
   if (!isEnabled) return null;
 
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gradient-to-r from-blue-100 to-purple-100 text-purple-700">
+    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-purple-400 border border-purple-500/20">
       <Globe className="w-3 h-3 mr-1" />
       Cross-Chain
     </span>
