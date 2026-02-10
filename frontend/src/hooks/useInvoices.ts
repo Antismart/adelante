@@ -1,11 +1,12 @@
 import { useState, useCallback } from "react";
+import { actionCreators } from "@near-js/transactions";
 import { useWalletStore } from "../stores/walletStore";
 import { useInvoiceStore } from "../stores/invoiceStore";
 import { CONTRACT_IDS } from "../config/near";
 import type { Invoice, CreateInvoiceParams } from "../types";
 
-const THIRTY_TGAS = "30000000000000";
-const DEPOSIT = "10000000000000000000000"; // 0.01 NEAR
+const THIRTY_TGAS = BigInt("30000000000000");
+const DEPOSIT = BigInt("10000000000000000000000"); // 0.01 NEAR
 
 export function useInvoices() {
   const { selector, accountId } = useWalletStore();
@@ -111,24 +112,20 @@ export function useInvoices() {
         const result = await wallet.signAndSendTransaction({
           receiverId: CONTRACT_IDS.invoice,
           actions: [
-            {
-              type: "FunctionCall",
-              params: {
-                methodName: "create_invoice",
-                args: {
-                  amount: params.amount,
-                  debtor_name: params.debtor_name,
-                  debtor_email: params.debtor_email || null,
-                  description: params.description,
-                  due_date: params.due_date,
-                  documents_hash: params.documents_hash,
-                },
-                gas: THIRTY_TGAS,
-                deposit: DEPOSIT,
+            actionCreators.functionCall(
+              "create_invoice",
+              {
+                amount: params.amount,
+                debtor_name: params.debtor_name,
+                debtor_email: params.debtor_email || null,
+                description: params.description,
+                due_date: params.due_date,
+                documents_hash: params.documents_hash,
               },
-            },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ] as any,
+              THIRTY_TGAS,
+              DEPOSIT,
+            ),
+          ],
         });
 
         // Refresh invoices after creation
@@ -159,17 +156,13 @@ export function useInvoices() {
         await wallet.signAndSendTransaction({
           receiverId: CONTRACT_IDS.invoice,
           actions: [
-            {
-              type: "FunctionCall",
-              params: {
-                methodName: "set_listed",
-                args: { invoice_id: invoiceId },
-                gas: THIRTY_TGAS,
-                deposit: "1",
-              },
-            },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ] as any,
+            actionCreators.functionCall(
+              "set_listed",
+              { invoice_id: invoiceId },
+              THIRTY_TGAS,
+              BigInt(0),
+            ),
+          ],
         });
 
         updateInvoice(invoiceId, { status: "Listed" });
@@ -196,17 +189,13 @@ export function useInvoices() {
         await wallet.signAndSendTransaction({
           receiverId: CONTRACT_IDS.invoice,
           actions: [
-            {
-              type: "FunctionCall",
-              params: {
-                methodName: "cancel_invoice",
-                args: { invoice_id: invoiceId },
-                gas: THIRTY_TGAS,
-                deposit: "1",
-              },
-            },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ] as any,
+            actionCreators.functionCall(
+              "cancel_invoice",
+              { invoice_id: invoiceId },
+              THIRTY_TGAS,
+              BigInt(0),
+            ),
+          ],
         });
 
         updateInvoice(invoiceId, { status: "Cancelled" });
