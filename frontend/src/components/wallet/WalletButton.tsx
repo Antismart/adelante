@@ -69,7 +69,7 @@ export function WalletButton() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="flex items-center space-x-2 px-3 py-2 bg-neutral-100 hover:bg-neutral-200 rounded-lg transition-colors"
+        className="flex items-center space-x-2 px-3 py-2 bg-surface-3 hover:bg-surface-4 border border-white/5 rounded-lg transition-colors"
       >
         {/* Account Avatar */}
         <div
@@ -81,7 +81,7 @@ export function WalletButton() {
 
         {/* Account Name */}
         <div className="hidden sm:block text-left">
-          <span className="text-sm font-medium text-neutral-900">
+          <span className="text-sm font-medium text-neutral-50">
             {displayName}
           </span>
           {isNamed && (
@@ -100,9 +100,9 @@ export function WalletButton() {
 
       {/* Dropdown Menu */}
       {dropdownOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-neutral-200 py-2 z-50">
+        <div className="absolute right-0 mt-2 w-64 bg-surface-3 rounded-xl shadow-2xl border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.5)] py-2 z-50">
           {/* Account Header */}
-          <div className="px-4 py-3 border-b border-neutral-100">
+          <div className="px-4 py-3 border-b border-white/5">
             <div className="flex items-center space-x-3">
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium"
@@ -111,7 +111,7 @@ export function WalletButton() {
                 {initials}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-neutral-900 truncate">
+                <p className="text-sm font-medium text-neutral-50 truncate">
                   {displayName}
                   {isNamed && (
                     <span className="text-neutral-500">
@@ -124,13 +124,13 @@ export function WalletButton() {
             </div>
 
             {/* Full Account ID with Copy */}
-            <div className="mt-3 flex items-center space-x-2 bg-neutral-50 rounded-lg px-3 py-2">
-              <code className="flex-1 text-xs text-neutral-600 truncate font-mono">
+            <div className="mt-3 flex items-center space-x-2 bg-surface-2 border border-white/5 rounded-lg px-3 py-2">
+              <code className="flex-1 text-xs text-neutral-400 truncate font-mono">
                 {accountId}
               </code>
               <button
                 onClick={handleCopy}
-                className="p-1 hover:bg-neutral-200 rounded transition-colors"
+                className="p-1 hover:bg-white/10 rounded transition-colors"
                 title="Copy account ID"
               >
                 {copied ? (
@@ -147,7 +147,7 @@ export function WalletButton() {
             <Link
               to="/dashboard"
               onClick={() => setDropdownOpen(false)}
-              className="flex items-center space-x-3 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+              className="flex items-center space-x-3 px-4 py-2 text-sm text-neutral-300 hover:bg-white/5"
             >
               <User className="w-4 h-4 text-neutral-400" />
               <span>My Dashboard</span>
@@ -157,7 +157,7 @@ export function WalletButton() {
               href={getExplorerAccountUrl(accountId || "")}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center space-x-3 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+              className="flex items-center space-x-3 px-4 py-2 text-sm text-neutral-300 hover:bg-white/5"
             >
               <ExternalLink className="w-4 h-4 text-neutral-400" />
               <span>View on Explorer</span>
@@ -165,13 +165,13 @@ export function WalletButton() {
           </div>
 
           {/* Disconnect */}
-          <div className="border-t border-neutral-100 pt-1 mt-1">
+          <div className="border-t border-white/5 pt-1 mt-1">
             <button
               onClick={() => {
                 disconnect();
                 setDropdownOpen(false);
               }}
-              className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+              className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10"
             >
               <LogOut className="w-4 h-4" />
               <span>Disconnect</span>
