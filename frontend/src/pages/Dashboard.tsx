@@ -3,6 +3,7 @@ import { Plus, FileText, DollarSign, Clock, TrendingUp } from "lucide-react";
 import { useWalletStore } from "../stores/walletStore";
 import { useInvoices } from "../hooks/useInvoices";
 import { useMarketplace } from "../hooks/useMarketplace";
+import { CONTRACT_IDS } from "../config/near";
 import { Button } from "../components/common/Button";
 import { Modal } from "../components/common/Modal";
 import { Input } from "../components/common/Input";
@@ -20,8 +21,8 @@ type TabType = "all" | InvoiceStatus;
 
 export function Dashboard() {
   const { accountId, isConnected, connect } = useWalletStore();
-  const { invoices, isCreating, fetchInvoicesByCreator, createInvoice, setInvoiceListed, cancelInvoice } = useInvoices();
-  const { listInvoice } = useMarketplace();
+  const { invoices, isCreating, fetchInvoicesByCreator, createInvoice } = useInvoices();
+  const { listInvoice, cancelListing } = useMarketplace();
 
   const [activeTab, setActiveTab] = useState<TabType>("all");
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -56,7 +57,44 @@ export function Dashboard() {
   ];
 
   const handleCancelListing = async (invoiceId: string) => {
-    await cancelInvoice(invoiceId);
+    try {
+      // Look up the listing ID for this invoice from the marketplace contract
+      const response = await fetch("https://rpc.testnet.near.org", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: "dontcare",
+          method: "query",
+          params: {
+            request_type: "call_function",
+            finality: "final",
+            account_id: CONTRACT_IDS.marketplace,
+            method_name: "get_listing_by_invoice",
+            args_base64: btoa(JSON.stringify({ invoice_id: invoiceId })),
+          },
+        }),
+      });
+      const data = await response.json();
+      if (!data.result?.result) {
+        console.error("Listing not found for invoice:", invoiceId);
+        return;
+      }
+      const resultString = String.fromCharCode(...data.result.result);
+      const listing = JSON.parse(resultString);
+      if (!listing) {
+        console.error("Listing not found for invoice:", invoiceId);
+        return;
+      }
+
+      const success = await cancelListing(listing.id);
+      if (success) {
+        // Update local invoice status back to Draft
+        await fetchInvoicesByCreator();
+      }
+    } catch (err) {
+      console.error("Failed to cancel listing:", err);
+    }
   };
 
   if (!isConnected) {
@@ -64,10 +102,10 @@ export function Dashboard() {
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
           <FileText className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-neutral-900 mb-2">
+          <h2 className="text-2xl font-bold text-neutral-50 mb-2">
             Connect Your Wallet
           </h2>
-          <p className="text-neutral-600 mb-6">
+          <p className="text-neutral-400 mb-6">
             Connect your NEAR wallet to manage your invoices
           </p>
           <Button onClick={connect}>Connect Wallet</Button>
@@ -82,10 +120,10 @@ export function Dashboard() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-neutral-900">
+            <h1 className="text-2xl font-bold text-neutral-50">
               Welcome, {accountId}
             </h1>
-            <p className="text-neutral-600 mt-1">
+            <p className="text-neutral-400 mt-1">
               Manage your invoices and track payments
             </p>
           </div>
@@ -97,53 +135,53 @@ export function Dashboard() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl p-6 border border-neutral-200">
+          <div className="glass-card rounded-xl p-6">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-                <FileText className="w-5 h-5 text-primary-600" />
+              <div className="w-10 h-10 bg-primary-500/10 rounded-lg flex items-center justify-center">
+                <FileText className="w-5 h-5 text-primary-400" />
               </div>
               <div>
-                <p className="text-sm text-neutral-600">Total Invoices</p>
-                <p className="text-2xl font-bold text-neutral-900">
+                <p className="text-sm text-neutral-400">Total Invoices</p>
+                <p className="text-2xl font-bold text-neutral-50">
                   {stats.total}
                 </p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-6 border border-neutral-200">
+          <div className="glass-card rounded-xl p-6">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+                <DollarSign className="w-5 h-5 text-emerald-400" />
               </div>
               <div>
-                <p className="text-sm text-neutral-600">Total Value</p>
-                <p className="text-2xl font-bold text-neutral-900">
+                <p className="text-sm text-neutral-400">Total Value</p>
+                <p className="text-2xl font-bold text-neutral-50">
                   {formatUSDC(stats.totalValue)}
                 </p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-6 border border-neutral-200">
+          <div className="glass-card rounded-xl p-6">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Clock className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                <Clock className="w-5 h-5 text-blue-400" />
               </div>
               <div>
-                <p className="text-sm text-neutral-600">Listed</p>
-                <p className="text-2xl font-bold text-neutral-900">
+                <p className="text-sm text-neutral-400">Listed</p>
+                <p className="text-2xl font-bold text-neutral-50">
                   {stats.listed}
                 </p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-6 border border-neutral-200">
+          <div className="glass-card rounded-xl p-6">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-purple-400" />
               </div>
               <div>
-                <p className="text-sm text-neutral-600">Sold</p>
-                <p className="text-2xl font-bold text-neutral-900">
+                <p className="text-sm text-neutral-400">Sold</p>
+                <p className="text-2xl font-bold text-neutral-50">
                   {stats.sold}
                 </p>
               </div>
@@ -157,7 +195,7 @@ export function Dashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-neutral-200 mb-6">
+        <div className="border-b border-white/10 mb-6">
           <div className="flex space-x-8">
             {tabs.map((tab) => (
               <button
@@ -165,8 +203,8 @@ export function Dashboard() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`py-3 border-b-2 text-sm font-medium transition-colors ${
                   activeTab === tab.id
-                    ? "border-primary-600 text-primary-600"
-                    : "border-transparent text-neutral-600 hover:text-neutral-900"
+                    ? "border-primary-400 text-primary-400"
+                    : "border-transparent text-neutral-500 hover:text-neutral-200"
                 }`}
               >
                 {tab.label}
@@ -178,9 +216,9 @@ export function Dashboard() {
         {/* Invoice List */}
         <div className="space-y-4">
           {filteredInvoices.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-xl border border-neutral-200">
+            <div className="text-center py-12 glass-card rounded-xl">
               <FileText className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
-              <p className="text-neutral-600">No invoices found</p>
+              <p className="text-neutral-400">No invoices found</p>
               <p className="text-sm text-neutral-500 mt-1">
                 Create your first invoice to get started
               </p>
@@ -189,17 +227,17 @@ export function Dashboard() {
             filteredInvoices.map((invoice) => (
               <div
                 key={invoice.id}
-                className="bg-white rounded-xl p-6 border border-neutral-200 hover:shadow-md transition-shadow"
+                className="glass-card glass-card-hover rounded-xl p-6 transition-all duration-300"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="font-semibold text-neutral-900">
+                      <h3 className="font-semibold text-neutral-50">
                         {invoice.id}
                       </h3>
                       <StatusBadge status={invoice.status} />
                     </div>
-                    <p className="text-neutral-600">
+                    <p className="text-neutral-300">
                       {formatUSDC(invoice.amount)} | {invoice.debtor_name} | Due:{" "}
                       {formatDate(invoice.due_date)} (
                       {getDaysUntil(invoice.due_date)} days)
@@ -254,7 +292,6 @@ export function Dashboard() {
         }}
         invoice={selectedInvoice}
         onList={listInvoice}
-        onSetListed={setInvoiceListed}
       />
     </div>
   );
@@ -355,11 +392,11 @@ function CreateInvoiceModal({
           }
         />
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">
+          <label className="block text-sm font-medium text-neutral-200 mb-1">
             Description
           </label>
           <textarea
-            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full px-3 py-2 border border-neutral-700 rounded-lg bg-surface-2 text-neutral-50 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
             rows={3}
             placeholder="500 units of organic coffee beans delivered on Jan 15, 2025"
             value={formData.description}
@@ -379,14 +416,14 @@ function CreateInvoiceModal({
           required
         />
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">
+          <label className="block text-sm font-medium text-neutral-200 mb-1">
             Upload Invoice PDF
           </label>
           <input
             type="file"
             accept=".pdf"
             onChange={(e) => setFile(e.target.files?.[0] || null)}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full px-3 py-2 border border-neutral-700 rounded-lg bg-surface-2 text-neutral-50 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
             required
           />
         </div>
@@ -409,7 +446,6 @@ function ListInvoiceModal({
   onClose,
   invoice,
   onList,
-  onSetListed,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -422,7 +458,6 @@ function ListInvoiceModal({
     min_price?: string;
     expires_at?: number;
   }) => Promise<string | null>;
-  onSetListed: (invoiceId: string) => Promise<boolean>;
 }) {
   const [askingPrice, setAskingPrice] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -438,17 +473,10 @@ function ListInvoiceModal({
     setIsLoading(true);
 
     try {
-      // First set the invoice to Listed status
-      const listed = await onSetListed(invoice.id);
-      if (!listed) {
-        setIsLoading(false);
-        return;
-      }
-
       // Convert asking price to USDC units
       const askingPriceUnits = String(Math.floor(price * 1_000_000));
 
-      // List on marketplace
+      // List on marketplace (contract handles setting invoice status via cross-contract call)
       const result = await onList({
         invoice_id: invoice.id,
         asking_price: askingPriceUnits,
@@ -468,9 +496,9 @@ function ListInvoiceModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="List Invoice for Sale" size="md">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="bg-neutral-50 rounded-lg p-4 mb-4">
-          <p className="text-sm text-neutral-600">Invoice Value</p>
-          <p className="text-2xl font-bold text-neutral-900">
+        <div className="bg-surface-2 border border-white/5 rounded-lg p-4 mb-4">
+          <p className="text-sm text-neutral-400">Invoice Value</p>
+          <p className="text-2xl font-bold text-neutral-50">
             {formatUSDC(invoice.amount)}
           </p>
           <p className="text-sm text-neutral-500 mt-1">
