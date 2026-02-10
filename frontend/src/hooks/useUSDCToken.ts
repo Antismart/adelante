@@ -1,11 +1,14 @@
 import { useState, useCallback } from "react";
+import { actionCreators } from "@near-js/transactions";
 import { useWalletStore } from "../stores/walletStore";
 import { CONTRACT_IDS } from "../config/near";
 
 // USDC has 6 decimals
 const USDC_DECIMALS = 6;
-const ONE_HUNDRED_TGAS = "100000000000000";
-const ONE_YOCTO = "1";
+const THIRTY_TGAS = BigInt("30000000000000");
+const ONE_HUNDRED_TGAS = BigInt("100000000000000");
+const ONE_YOCTO = BigInt("1");
+const STORAGE_DEPOSIT = BigInt("1250000000000000000000"); // 0.00125 NEAR
 
 export function useUSDCToken() {
   const { selector, accountId } = useWalletStore();
@@ -124,17 +127,13 @@ export function useUSDCToken() {
       await wallet.signAndSendTransaction({
         receiverId: CONTRACT_IDS.usdc,
         actions: [
-          {
-            type: "FunctionCall",
-            params: {
-              methodName: "storage_deposit",
-              args: { account_id: account },
-              gas: "30000000000000",
-              deposit: "1250000000000000000000", // 0.00125 NEAR for storage
-            },
-          },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ] as any,
+          actionCreators.functionCall(
+            "storage_deposit",
+            { account_id: account },
+            THIRTY_TGAS,
+            STORAGE_DEPOSIT,
+          ),
+        ],
       });
 
       return true;
@@ -169,22 +168,18 @@ export function useUSDCToken() {
         const result = await wallet.signAndSendTransaction({
           receiverId: CONTRACT_IDS.usdc,
           actions: [
-            {
-              type: "FunctionCall",
-              params: {
-                methodName: "ft_transfer_call",
-                args: {
-                  receiver_id: receiverId,
-                  amount: amount,
-                  memo: null,
-                  msg: msg,
-                },
-                gas: ONE_HUNDRED_TGAS,
-                deposit: ONE_YOCTO,
+            actionCreators.functionCall(
+              "ft_transfer_call",
+              {
+                receiver_id: receiverId,
+                amount: amount,
+                memo: null,
+                msg: msg,
               },
-            },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ] as any,
+              ONE_HUNDRED_TGAS,
+              ONE_YOCTO,
+            ),
+          ],
         });
 
         // Refresh balance after transfer
@@ -219,21 +214,17 @@ export function useUSDCToken() {
         const result = await wallet.signAndSendTransaction({
           receiverId: CONTRACT_IDS.usdc,
           actions: [
-            {
-              type: "FunctionCall",
-              params: {
-                methodName: "ft_transfer",
-                args: {
-                  receiver_id: receiverId,
-                  amount: amount,
-                  memo: null,
-                },
-                gas: "30000000000000",
-                deposit: ONE_YOCTO,
+            actionCreators.functionCall(
+              "ft_transfer",
+              {
+                receiver_id: receiverId,
+                amount: amount,
+                memo: null,
               },
-            },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ] as any,
+              THIRTY_TGAS,
+              ONE_YOCTO,
+            ),
+          ],
         });
 
         await fetchBalance();
