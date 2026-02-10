@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { actionCreators } from "@near-js/transactions";
 import { useWalletStore } from "../stores/walletStore";
 import {
   CHAIN_CONFIGS,
@@ -9,8 +10,8 @@ import {
 } from "../lib/chainSignatures";
 import type { SupportedChain } from "../lib/chainSignatures";
 
-const SIXTY_TGAS = "60000000000000";
-const SIGNATURE_DEPOSIT = "1"; // 1 yoctoNEAR
+const SIXTY_TGAS = BigInt("60000000000000");
+const ONE_YOCTO = BigInt("1");
 
 interface DerivedAddress {
   chain: SupportedChain;
@@ -121,23 +122,19 @@ export function useChainSignatures() {
         const result = await wallet.signAndSendTransaction({
           receiverId: MPC_CONTRACT,
           actions: [
-            {
-              type: "FunctionCall",
-              params: {
-                methodName: "sign",
-                args: {
-                  request: {
-                    payload: Array.from(Buffer.from(payload.replace("0x", ""), "hex")),
-                    path,
-                    key_version: 0,
-                  },
+            actionCreators.functionCall(
+              "sign",
+              {
+                request: {
+                  payload: Array.from(Buffer.from(payload.replace("0x", ""), "hex")),
+                  path,
+                  key_version: 0,
                 },
-                gas: SIXTY_TGAS,
-                deposit: SIGNATURE_DEPOSIT,
               },
-            },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ] as any,
+              SIXTY_TGAS,
+              ONE_YOCTO,
+            ),
+          ],
         });
 
         // In production, parse the signature from the transaction result
