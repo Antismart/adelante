@@ -81,7 +81,7 @@ export function AccountDisplay({
           {/* Display Name */}
           <span
             className={cn(
-              "font-medium text-neutral-900 truncate",
+              "font-medium text-neutral-50 truncate",
               sizeClasses[size].text
             )}
             title={showFullOnHover ? accountId : undefined}
@@ -91,7 +91,7 @@ export function AccountDisplay({
 
           {/* Named Account Badge */}
           {isNamed && (
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-700">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-primary-500/10 text-primary-400">
               .{accountId.split('.').pop()}
             </span>
           )}
@@ -100,7 +100,7 @@ export function AccountDisplay({
           {showCopy && (
             <button
               onClick={handleCopy}
-              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-neutral-100 rounded"
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded"
               title="Copy account ID"
             >
               {copied ? (
@@ -117,7 +117,7 @@ export function AccountDisplay({
               href={getExplorerAccountUrl(accountId)}
               target="_blank"
               rel="noopener noreferrer"
-              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-neutral-100 rounded"
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded"
               title="View on Explorer"
             >
               <ExternalLink className="w-3 h-3 text-neutral-400" />
